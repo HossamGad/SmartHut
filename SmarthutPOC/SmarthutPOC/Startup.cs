@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
@@ -33,6 +34,11 @@ namespace SmarthutPOC
             services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
                 .AddAzureAD(options => Configuration.Bind("AzureAd", options));
 
+            services.Configure<OpenIdConnectOptions>(AzureADDefaults.OpenIdScheme, opt =>
+            {
+                opt.SaveTokens = true;
+            });
+
             services.AddControllersWithViews(options =>
             {
                 var policy = new AuthorizationPolicyBuilder()
@@ -41,9 +47,13 @@ namespace SmarthutPOC
                 options.Filters.Add(new AuthorizeFilter(policy));
             });
 
+            services.AddHttpContextAccessor();
+            services.AddHttpClient();
+            services.AddHttpClient<ISmarthutService, SmarthutService>();
+            services.AddMemoryCache();
+
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

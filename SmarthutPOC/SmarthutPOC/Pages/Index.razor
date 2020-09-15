@@ -1,7 +1,25 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+@inject ISmarthutService SmarthutService;
 
-Welcome to your new app.
+<div class="album py-5 bg-white">
+    <div class="container">
+        <div class="row">
+            @foreach (var device in _devices)
+            {
+                <DeviceCard Device="@device" />
+            }
+        </div>
+    </div>
+</div>
 
-<SurveyPrompt Title="How is Blazor working for you?"/>
+@code
+{
+    private IEnumerable<Device> _devices = new List<Device>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _devices = await SmarthutService.GetDevices();
+    }
+
+}

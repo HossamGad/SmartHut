@@ -1,5 +1,7 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">SmarthutPOC</a>
+﻿@inject ISmarthutService SmarthutService;
+
+<div class="top-row pl-4 navbar navbar-dark">
+    <a class="navbar-brand" href="">@_building.Name</a>
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -27,12 +29,18 @@
 
 @code {
     private bool collapseNavMenu = true;
+    private Building _building = new Building();
 
     private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _building = await SmarthutService.GetBuilding();
     }
 
 }
