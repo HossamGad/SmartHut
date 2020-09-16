@@ -16,10 +16,44 @@
 @code
 {
     private IEnumerable<Device> _devices = new List<Device>();
+    private HubConnection _hubConnection;
+    
 
     protected override async Task OnInitializedAsync()
     {
         _devices = await SmarthutService.GetDevices();
+    
+        var result = await SmarthutService.NegotiateSignalR();
+
+        _hubConnection = new HubConnectionBuilder()
+                .WithUrl(result.Url, opt => { opt.AccessTokenProvider = async () => { return result.AccessToken; }; })
+                .Build();
+
+            _hubConnection.On<IEnumerable<Telemetry>>("newTelemetry", telemetrys =>
+            {
+                foreach (var telemetry in telemetrys)
+                {
+                    foreach (var device in _devices)
+                    {
+                        if (telemetry.DeviceId == device.Id)
+                        {
+                            device.Time = UnixTimeToUtc.UnixTimeToDateTime(telemetry.Time);
+                            device.Value = telemetry.Value;
+                        }
+
+                    }
+
+                }
+                StateHasChanged();
+            });
+        await _hubConnection.StartAsync();
+    }
+
+    public bool IsConnected => _hubConnection.State == HubConnectionState.Connected;
+
+    public void Dispose()
+    {
+        _ = _hubConnection.DisposeAsync();
     }
 
 }

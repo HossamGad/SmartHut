@@ -74,6 +74,17 @@ namespace SmarthutPOC.Data
             return units;
         }
 
+        public async Task<NegotiationResult> NegotiateSignalR()
+        {
+            var negotiationClient = new HttpClient();
+            negotiationClient.DefaultRequestHeaders.Add("X-MS-SIGNALR-USERID", _httpContextAccessor.HttpContext.User.Identity.Name);
+
+            var response = await negotiationClient.GetStringAsync(_configuration.GetValue<Uri>("SmartHutApi:NegotiateUri"));
+            var negotiationResult = JsonConvert.DeserializeObject<NegotiationResult>(response);
+
+            return negotiationResult;
+        }
+
         //private static JsonSerializerOptions JsonOptions()
         //{
         //    return new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault, PropertyNameCaseInsensitive = true };
