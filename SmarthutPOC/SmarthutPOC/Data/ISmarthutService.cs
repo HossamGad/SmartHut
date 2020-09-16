@@ -10,5 +10,6 @@ namespace SmarthutPOC.Data
         public Task<IEnumerable<Units>> GetUnits();
         public Task<Building> GetBuilding();
         public Task<IEnumerable<Device>> GetDevices();
+        public Task<NegotiationResult> NegotiateSignalR();
     }
 }

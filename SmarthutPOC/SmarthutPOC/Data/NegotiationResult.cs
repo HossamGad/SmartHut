@@ -7,5 +7,7 @@ namespace SmarthutPOC.Data
 {
     public class NegotiationResult
     {
+        public string Url { get; set; }
+        public string AccessToken { get; set; }
     }
 }
