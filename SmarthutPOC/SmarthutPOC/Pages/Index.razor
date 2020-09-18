@@ -31,21 +31,21 @@
 
             _hubConnection.On<IEnumerable<Telemetry>>("newTelemetry", telemetrys =>
             {
-                foreach (var telemetry in telemetrys)
-                {
-                    foreach (var device in _devices)
-                    {
-                        if (telemetry.DeviceId == device.Id)
-                        {
-                            device.Time = UnixTimeToUtc.UnixTimeToDateTime(telemetry.Time);
-                            device.Value = telemetry.Value;
-                        }
-
-                    }
-
-                }
+               _devices = VerifyTelemetryValue.SetDeviceWithTelemetry((List<Device>) _devices, (List<Telemetry>) telemetrys);
                 StateHasChanged();
             });
+
+//Response: Alarm restored on device with id aa354970-8c24-4a16-bd01-cc0a9ef0bff3 by joji19tv@student.ju.se
+            _hubConnection.On<string>("alarmNeutralized", alarm =>
+        {
+            var _restoredAlarmGuid = RegexMatcher.CheckAndGetGuid(alarm);
+            var _userRestored = RegexMatcher.CheckAndGetEmail(alarm);
+
+            Console.WriteLine($"{_restoredAlarmGuid} is restored by {_userRestored}");
+
+            StateHasChanged();
+        });
+
         await _hubConnection.StartAsync();
     }
 

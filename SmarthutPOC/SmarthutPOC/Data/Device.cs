@@ -16,15 +16,20 @@ namespace SmarthutPOC.Data
         public Units Units { get; set; }
         public int MetricType { get; set; }
         public Guid BuildingId { get; set; }
-        
+
         //Below properties are used for signalR
         public Guid DeviceId { get; set; }
         public DateTime Time { get; set; }
+
+
         private float _value;
         public float Value
         {
-            get { return _value;}
-            set { _value = (float) Math.Round(value, 1); }
-        } 
+            get { return _value; }
+            set { _value = (float)Math.Round(value, 1); }
+        }
+
+        public bool IsAlarm { get; set; }
+
     }
 }

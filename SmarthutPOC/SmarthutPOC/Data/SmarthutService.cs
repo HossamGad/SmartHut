@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -84,6 +87,42 @@ namespace SmarthutPOC.Data
 
             return negotiationResult;
         }
+
+        public async Task RestoreAlarm(Guid deviceId)
+        {
+            
+            var client = new HttpClient();
+           
+            var jsonObject = new RestoreAlarm()
+            {
+                DeviceId = deviceId,
+                UserName = _httpContextAccessor.HttpContext.User.Identity.Name
+            };
+            
+            var json = JsonConvert.SerializeObject(jsonObject);
+
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            
+            var response = await client.PostAsync(_configuration.GetValue<Uri>("SmartHutApi:RestoreAlarmUri"), content);
+            
+            string result = response.Content.ReadAsStringAsync().Result;
+            Console.WriteLine(result);
+        }
+
+            // var person = new Person();
+            // person.Name = "John Doe";
+            // person.Occupation = "gardener";
+
+            // var json = JsonConvert.SerializeObject(person);
+            // var data = new StringContent(json, Encoding.UTF8, "application/json");
+
+            // var url = "https://httpbin.org/post";
+            // using var client = new HttpClient();
+
+            // var response = await client.PostAsync(url, data);
+
+            // string result = response.Content.ReadAsStringAsync().Result;
+            // Console.WriteLine(result);
 
         //private static JsonSerializerOptions JsonOptions()
         //{

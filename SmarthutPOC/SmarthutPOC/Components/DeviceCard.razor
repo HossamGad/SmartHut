@@ -2,7 +2,7 @@
 
 <div class="col-md-6">
     <div class="card mb-4 shadow-sm">
-        <div class="card-body">
+        <div class="card-body @(Device.IsAlarm ? "bg-warning" : "")">
             <p class="card-title">@Device.Name</p>
             <p class="card-text">
                 <small>Unit: @Device.Units.Name</small>
@@ -17,6 +17,9 @@
                     <p>@Device.Value</p>
                     <p>Last updated: </p>
                     <p>@Device.Time</p>
+                    @if(Device.IsAlarm){
+                        <button @onclick="ResetAlarm">Reset</button>
+                    }
                 </div>
             </div>
         </div>
@@ -28,5 +31,9 @@
     [Parameter]
     public Device Device { get; set; }
 
-
+    private void ResetAlarm() 
+    {
+        Device.IsAlarm = false;
+        SmarthutService.RestoreAlarm(Device.Id);
+    }
 }
