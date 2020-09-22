@@ -17,11 +17,23 @@
                     <p>@Device.Value</p>
                     <p>Last updated: </p>
                     <p>@Device.Time</p>
-                    @if(Device.IsAlarm){
-                        <button @onclick="ResetAlarm">Reset</button>
-                    }
+                </div>
+                <div>
+                    <i class="fab fa-hotjar"></i>
+                    <i class="fas fa-snowflake"></i>
+                    <i class="fas fa-water"></i>
+                    <i class="fas fa-temperature-high"></i>
+                    <i class="fas fa-temperature-low"></i>
+                    <i class="fas fa-tint-slash"></i>
+                    <i class="fas fa-tint"></i>
                 </div>
             </div>
+            @if (Device.IsAlarm)
+            {
+                <div class="row">
+                    <button class="btn btn-lg btn-dark btn-block m-2" @onclick="ResetAlarm">Restore</button>
+                </div>
+            }
         </div>
     </div>
 </div>
@@ -31,9 +43,10 @@
     [Parameter]
     public Device Device { get; set; }
 
-    private void ResetAlarm() 
+    private void ResetAlarm()
     {
         Device.IsAlarm = false;
         SmarthutService.RestoreAlarm(Device.Id);
     }
+
 }

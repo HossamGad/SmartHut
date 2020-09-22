@@ -4,8 +4,8 @@ namespace SmarthutPOC.Data
 {
     public class RestoreAlarm
     {
-         public Guid DeviceId { get; set; }
-        public string UserName { get; set; }
+        public Guid deviceId { get; set; }
+        public string userName { get; set; }
 
     }
 }

@@ -54,11 +54,11 @@ namespace SmarthutPOC.Data
             var devices = buildingWithDevices.Devices;
 
             //TODO #36 task no5
-            foreach(var device in devices)
+            foreach (var device in devices)
             {
                 foreach (var unit in await GetUnits())
                 {
-                    if(device.UnitId == unit.Id)
+                    if (device.UnitId == unit.Id)
                     {
                         device.Units = unit;
                     }
@@ -88,57 +88,34 @@ namespace SmarthutPOC.Data
             return negotiationResult;
         }
 
-        public async Task RestoreAlarm(Guid deviceId)
+        public async Task<HttpResponseMessage> RestoreAlarm(Guid deviceId)
         {
-            
-            var client = new HttpClient();
-           
-            var jsonObject = new RestoreAlarm()
-            {
-                DeviceId = deviceId,
-                UserName = _httpContextAccessor.HttpContext.User.Identity.Name
-            };
-            
-            var json = JsonConvert.SerializeObject(jsonObject);
 
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            
-            var response = await client.PostAsync(_configuration.GetValue<Uri>("SmartHutApi:RestoreAlarmUri"), content);
-            
-            string result = response.Content.ReadAsStringAsync().Result;
-            Console.WriteLine(result);
+            try
+            {
+                var client = new HttpClient();
+
+                var jsonObject = new RestoreAlarm()
+                {
+                    deviceId = deviceId,
+                    userName = _httpContextAccessor.HttpContext.User.Identity.Name
+                };
+
+                var json = JsonConvert.SerializeObject(jsonObject);
+
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(_configuration.GetValue<Uri>("SmartHutApi:RestoreAlarmUri"),
+                    content);
+                response.EnsureSuccessStatusCode();
+
+                return response;
+            }
+            catch (Exception e)
+            {
+                throw new HttpRequestException($"Something went wrong when trying to restore the alarm \n Message: {e.Message}");
+            }
         }
 
-            // var person = new Person();
-            // person.Name = "John Doe";
-            // person.Occupation = "gardener";
-
-            // var json = JsonConvert.SerializeObject(person);
-            // var data = new StringContent(json, Encoding.UTF8, "application/json");
-
-            // var url = "https://httpbin.org/post";
-            // using var client = new HttpClient();
-
-            // var response = await client.PostAsync(url, data);
-
-            // string result = response.Content.ReadAsStringAsync().Result;
-            // Console.WriteLine(result);
-
-        //private static JsonSerializerOptions JsonOptions()
-        //{
-        //    return new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault, PropertyNameCaseInsensitive = true };
-        //}
-
-        //public static MemoryCacheEntryOptions MemoryCacheEntryOpt()
-        //{
-        //    return new MemoryCacheEntryOptions()
-        //    {
-        //        AbsoluteExpiration = DateTime.Now.AddHours(6),
-        //        Priority = CacheItemPriority.Normal,
-        //        SlidingExpiration = TimeSpan.FromMinutes(5)
-        //    };
-        //}
-
-
-    }  
+    }
 }

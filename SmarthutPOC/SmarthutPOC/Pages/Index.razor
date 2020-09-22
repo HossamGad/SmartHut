@@ -7,7 +7,7 @@
         <div class="row">
             @foreach (var device in _devices)
             {
-                <DeviceCard Device="@device" />
+                <DeviceCard Device="@device"/>
             }
         </div>
     </div>
@@ -17,26 +17,26 @@
 {
     private IEnumerable<Device> _devices = new List<Device>();
     private HubConnection _hubConnection;
-    
+
 
     protected override async Task OnInitializedAsync()
     {
         _devices = await SmarthutService.GetDevices();
-    
+
         var result = await SmarthutService.NegotiateSignalR();
 
         _hubConnection = new HubConnectionBuilder()
-                .WithUrl(result.Url, opt => { opt.AccessTokenProvider = async () => { return result.AccessToken; }; })
-                .Build();
+            .WithUrl(result.Url, opt => { opt.AccessTokenProvider = async () => await Task.FromResult(result.AccessToken); })
+            .Build();
 
-            _hubConnection.On<IEnumerable<Telemetry>>("newTelemetry", telemetrys =>
-            {
-               _devices = VerifyTelemetryValue.SetDeviceWithTelemetry((List<Device>) _devices, (List<Telemetry>) telemetrys);
-                StateHasChanged();
-            });
+        _hubConnection.On<IEnumerable<Telemetry>>("newTelemetry", telemetrys =>
+        {
+            _devices = VerifyTelemetryValue.SetDeviceWithTelemetry((List<Device>) _devices, (List<Telemetry>) telemetrys);
+            StateHasChanged();
+        });
 
-//Response: Alarm restored on device with id aa354970-8c24-4a16-bd01-cc0a9ef0bff3 by joji19tv@student.ju.se
-            _hubConnection.On<string>("alarmNeutralized", alarm =>
+    //Response: Alarm restored on device with id aa354970-8c24-4a16-bd01-cc0a9ef0bff3 by joji19tv@student.ju.se
+        _hubConnection.On<string>("alarmNeutralized", alarm =>
         {
             var _restoredAlarmGuid = RegexMatcher.CheckAndGetGuid(alarm);
             var _userRestored = RegexMatcher.CheckAndGetEmail(alarm);
@@ -55,5 +55,4 @@
     {
         _ = _hubConnection.DisposeAsync();
     }
-
 }
