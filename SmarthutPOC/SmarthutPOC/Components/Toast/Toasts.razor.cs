@@ -96,7 +96,7 @@ namespace SmarthutPOC.Components.Toast
                     TimeStamp = DateTime.Now.Date,
                     ToastSettings = settings
                 };
-                if (!ToastList.Exists(t => t.ToastSettings.Heading == heading))
+                if (!ToastList.Exists(t => t.ToastSettings.Heading == heading || t.Id == id))
                 {
                     ToastList.Add(toast);
                 }

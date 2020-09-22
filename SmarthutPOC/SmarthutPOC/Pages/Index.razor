@@ -84,7 +84,7 @@ else
             var restoredDevice = _devices.FirstOrDefault(d => d.Id == restoredAlarmGuid);
             if (restoredDevice != null)
             {
-                var guid = new Guid();
+                var guid = Guid.NewGuid();
                 restoredDevice.IsAlarm = false;
                 restoredDevice.UnitTypeHighLow = UnitTypeHighLow.Ok;
                 ToastService.ShowInfo($"Alarm on device:\n{restoredDevice.Name}\nIs restored by:\n{userRestored}", "fas fa-info", guid,$"{restoredDevice.Name} is restored" );
