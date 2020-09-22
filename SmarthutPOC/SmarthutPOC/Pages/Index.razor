@@ -1,58 +1,113 @@
 ﻿@page "/"
 
 @inject ISmarthutService SmarthutService;
+@inject IToastService ToastService;
 
-<div class="album py-5 bg-white">
-    <div class="container">
-        <div class="row">
-            @foreach (var device in _devices)
-            {
-                <DeviceCard Device="@device"/>
-            }
+@using System.Text.RegularExpressions
+@implements IDisposable
+
+@if (!IsConnected)
+{
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">Not connected to the server!</h4>
+        <p>The server is down, i might be due to maintenance (between 01:00 and 04:00 PM all days in the week)</p>
+        <hr>
+        <p class="mb-0">If the error persists outside the timed scope, please contact <a style="color: black" href="mailto:tech@concorde.com">Technical support</a></p>
+    </div>
+}
+else
+{
+    <div class="album py-2 bg-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <button type="button" class="btn btn-secondary mb-2 text-white" @onclick="SetShowAlarm">@(_showAlarm ? "Show all" : "Show alarm")</button>
+                </div>
+            </div>
+            <div class="row">
+                @if (_showAlarm && !_devices.Any())
+                {
+                    <div class="col-md-6">
+                        <div class="alert alert-success" role="alert">
+                            No devices with warnings where found &#128076
+                        </div>
+                    </div>
+                }
+                else if (!_devices.Any())
+                {
+                    <div class="spinner-border" style="width: 3rem; height: 3rem; margin-left: 50%; margin-top: 50%;" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var device in _devices)
+                    {
+                        <DeviceCard Device="@device"/>
+                    }
+                }
+            </div>
         </div>
     </div>
-</div>
+}
+
 
 @code
 {
     private IEnumerable<Device> _devices = new List<Device>();
     private HubConnection _hubConnection;
-
+    private bool _showAlarm;
 
     protected override async Task OnInitializedAsync()
     {
-        _devices = await SmarthutService.GetDevices();
-
+        var devices = await SmarthutService.GetDevices();
+        devices = devices.OrderBy(s => int.Parse(Regex.Match(s.Name, @"(\d+)(?!.*\d)").Value)).ToList();
         var result = await SmarthutService.NegotiateSignalR();
 
         _hubConnection = new HubConnectionBuilder()
             .WithUrl(result.Url, opt => { opt.AccessTokenProvider = async () => await Task.FromResult(result.AccessToken); })
             .Build();
 
+
         _hubConnection.On<IEnumerable<Telemetry>>("newTelemetry", telemetrys =>
         {
-            _devices = VerifyTelemetryValue.SetDeviceWithTelemetry((List<Device>) _devices, (List<Telemetry>) telemetrys);
+            _devices = VerifyTelemetryValue.SetDeviceWithTelemetry((List<Device>) devices, (List<Telemetry>) telemetrys);
+            if (_showAlarm) _devices = _devices.Where(d => d.IsAlarm);
             StateHasChanged();
         });
 
-    //Response: Alarm restored on device with id aa354970-8c24-4a16-bd01-cc0a9ef0bff3 by joji19tv@student.ju.se
         _hubConnection.On<string>("alarmNeutralized", alarm =>
         {
-            var _restoredAlarmGuid = RegexMatcher.CheckAndGetGuid(alarm);
-            var _userRestored = RegexMatcher.CheckAndGetEmail(alarm);
+            var restoredAlarmGuid = RegexMatcher.CheckAndGetGuid(alarm);
+            var userRestored = RegexMatcher.CheckAndGetEmail(alarm);
 
-            Console.WriteLine($"{_restoredAlarmGuid} is restored by {_userRestored}");
-
+            var restoredDevice = _devices.FirstOrDefault(d => d.Id == restoredAlarmGuid);
+            if (restoredDevice != null)
+            {
+                var guid = new Guid();
+                restoredDevice.IsAlarm = false;
+                restoredDevice.UnitTypeHighLow = UnitTypeHighLow.Ok;
+                ToastService.ShowInfo($"Alarm on device:\n{restoredDevice.Name}\nIs restored by:\n{userRestored}", "fas fa-info", guid,$"{restoredDevice.Name} is restored" );
+            }
             StateHasChanged();
         });
-
         await _hubConnection.StartAsync();
     }
 
-    public bool IsConnected => _hubConnection.State == HubConnectionState.Connected;
+    //TODO use this for deciding when the signalR server is down
+    public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
 
     public void Dispose()
     {
-        _ = _hubConnection.DisposeAsync();
+        _ = _hubConnection?.DisposeAsync();
     }
+
+    void SetShowAlarm()
+    {
+        _showAlarm = !_showAlarm;
+        if (_showAlarm) _devices = _devices.Where(d => d.IsAlarm);
+
+        StateHasChanged();
+    }
+
 }

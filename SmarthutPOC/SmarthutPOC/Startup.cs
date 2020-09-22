@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SmarthutPOC.Components.Toast.Services;
 using SmarthutPOC.Data;
 
 namespace SmarthutPOC
@@ -50,6 +51,7 @@ namespace SmarthutPOC
             services.AddHttpContextAccessor();
             services.AddHttpClient();
             services.AddHttpClient<ISmarthutService, SmarthutService>();
+            services.AddSingleton<IToastService, ToastService>();
             services.AddMemoryCache();
 
             services.AddRazorPages();

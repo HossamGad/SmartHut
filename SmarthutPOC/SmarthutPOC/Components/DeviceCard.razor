@@ -1,38 +1,49 @@
-﻿@inject ISmarthutService SmarthutService;
+﻿@using System.Diagnostics
+@inject ISmarthutService SmarthutService;
+@inject IToastService ToastService;
 
 <div class="col-md-6">
     <div class="card mb-4 shadow-sm">
         <div class="card-body @(Device.IsAlarm ? "bg-warning" : "")">
-            <p class="card-title">@Device.Name</p>
+            <p class="card-Title">
+                <h5>@Device.Name</h5>
+            </p>
             <p class="card-text">
                 <small>Unit: @Device.Units.Name</small>
             </p>
             <div class="row">
                 <div class="col-5">
-                    <p id="@String.Concat(@Device.Id, "max")" class="card-text">Max: @Device.MaxValue @Device.Units.Unit</p>
-                    <p id="@String.Concat(@Device.Id, "min")" class="card-text">Min: @Device.MinValue @Device.Units.Unit</p>
+                    <p id="@String.Concat(@Device.Id, "max")" class="card-text">Max: <strong>@Device.MaxValue @Device.Units.Unit</strong></p>
+                    <p id="@String.Concat(@Device.Id, "min")" class="card-text">Min: <strong>@Device.MinValue @Device.Units.Unit </strong></p>
+                    <div class="icon-container">
+                        <i class="@SelectIcon(Device.UnitTypeHighLow)"></i>
+                    </div>
                 </div>
                 <div class="col-7">
                     <p> Current value:</p>
-                    <p>@Device.Value</p>
+                    <p>
+                        <strong>@Device.Value</strong>
+                    </p>
                     <p>Last updated: </p>
-                    <p>@Device.Time</p>
-                </div>
-                <div>
-                    <i class="fab fa-hotjar"></i>
-                    <i class="fas fa-snowflake"></i>
-                    <i class="fas fa-water"></i>
-                    <i class="fas fa-temperature-high"></i>
-                    <i class="fas fa-temperature-low"></i>
-                    <i class="fas fa-tint-slash"></i>
-                    <i class="fas fa-tint"></i>
+                    <p>
+                        <strong>@Device.Time</strong>
+                    </p>
                 </div>
             </div>
             @if (Device.IsAlarm)
             {
-                <div class="row">
-                    <button class="btn btn-lg btn-dark btn-block m-2" @onclick="ResetAlarm">Restore</button>
+                <div class="row align-items-center">
+                    <button class="btn btn-lg btn-dark btn-block m-2" @onclick="ResetAlarm">
+                        Restore
+                        @if (ShowSpinner)
+                        {
+                            <div class="spinner-border" style="width: 1rem; height: 1rem; text-align: center;" role="status">
+                                @* <span class="sr-only">Loading...</span> *@
+                            </div>
+                        }
+                    </button>
                 </div>
+                 ToastService.ShowWarning($"Device: {Device.Name} is outside the recommended values", SelectIcon(Device.UnitTypeHighLow), Device.Id, Device.Name);
             }
         </div>
     </div>
@@ -43,10 +54,32 @@
     [Parameter]
     public Device Device { get; set; }
 
-    private void ResetAlarm()
+    public bool ShowSpinner = false;
+
+    async Task ResetAlarm()
     {
-        Device.IsAlarm = false;
-        SmarthutService.RestoreAlarm(Device.Id);
+        try
+        {
+            ShowSpinner = true;
+            var res = await SmarthutService.RestoreAlarm(Device.Id);
+            if (res.IsSuccessStatusCode) ShowSpinner = false;
+        }
+        catch (Exception e)
+        {
+            ToastService.ShowError(e.Message, "fas fa-exclamation-circle", new Guid(), "Failure!");
+        }
+    }
+
+    string SelectIcon(UnitTypeHighLow value)
+    {
+        return Device.UnitTypeHighLow switch
+        {
+            UnitTypeHighLow.CelsiusAbove => "fas fa-temperature-high",
+            UnitTypeHighLow.CelsiusBelow => "fas fa-temperature-low",
+            UnitTypeHighLow.HumidityAbove => "fas fa-tint",
+            UnitTypeHighLow.HumidityBelow => "fas fa-tint-slash",
+            _ => "fas fa-check-circle text-success"
+            };
     }
 
 }

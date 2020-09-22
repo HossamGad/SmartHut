@@ -1,0 +1,11 @@
+@if (ToastList.Any())
+{
+    <div class="toast-container @PositionClass">
+        <CascadingValue Value=this>
+            @foreach (var toast in ToastList.OrderByDescending(t => t.TimeStamp))
+            {
+                <Toast @key="toast" ToastSettings="toast.ToastSettings" ToastId="toast.Id" Timeout="Timeout"/>
+            }
+        </CascadingValue>
+    </div>
+}
