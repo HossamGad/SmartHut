@@ -1,12 +1,19 @@
 using System;
 using System.Collections.Generic;
+using SmarthutPOC.Components.Toast.Configuration;
+using SmarthutPOC.Components.Toast.Services;
 using SmarthutPOC.Data;
 
 namespace SmarthutPOC.Helpers
 {
     public class VerifyTelemetryValue
     {
+        private static IToastService _toastService;
 
+        public VerifyTelemetryValue(IToastService toastService)
+        {
+            _toastService = toastService;
+        }
 
         public static List<Device> SetDeviceWithTelemetry(List<Device> devices,
             List<Telemetry> telemetrys)
@@ -24,6 +31,7 @@ namespace SmarthutPOC.Helpers
                     }
                 }
             }
+
             return devices;
         }
 
@@ -32,13 +40,28 @@ namespace SmarthutPOC.Helpers
             //This is needed for the initial load, otherwise the value returned is true for  each responce from the hub during initial load
             if (device.Value > 0)
             {
-                if (device.Value - 20 < device.MinValue)
+                if (device.Value < device.MinValue)
                 {
+
+                    device.UnitTypeHighLow = device.Units.Unit switch
+                    {
+                        "°C" => UnitTypeHighLow.CelsiusBelow,
+                        "%" => UnitTypeHighLow.HumidityBelow,
+                        _ => device.UnitTypeHighLow
+                    };
+
                     device.IsAlarm = true;
                     return device;
                 }
-                else if (device.Value > device.MaxValue)
+                else if (device.Value + 5 > device.MaxValue)
                 {
+                    device.UnitTypeHighLow = device.Units.Unit switch
+                    {
+                        "°C" => UnitTypeHighLow.CelsiusAbove,
+                        "%" => UnitTypeHighLow.HumidityAbove,
+                        _ => device.UnitTypeHighLow
+                    };
+
                     device.IsAlarm = true;
                     return device;
                 }
