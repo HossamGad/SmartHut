@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -51,11 +54,11 @@ namespace SmarthutPOC.Data
             var devices = buildingWithDevices.Devices;
 
             //TODO #36 task no5
-            foreach(var device in devices)
+            foreach (var device in devices)
             {
                 foreach (var unit in await GetUnits())
                 {
-                    if(device.UnitId == unit.Id)
+                    if (device.UnitId == unit.Id)
                     {
                         device.Units = unit;
                     }
@@ -85,21 +88,34 @@ namespace SmarthutPOC.Data
             return negotiationResult;
         }
 
-        //private static JsonSerializerOptions JsonOptions()
-        //{
-        //    return new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault, PropertyNameCaseInsensitive = true };
-        //}
+        public async Task<HttpResponseMessage> RestoreAlarm(Guid deviceId)
+        {
 
-        //public static MemoryCacheEntryOptions MemoryCacheEntryOpt()
-        //{
-        //    return new MemoryCacheEntryOptions()
-        //    {
-        //        AbsoluteExpiration = DateTime.Now.AddHours(6),
-        //        Priority = CacheItemPriority.Normal,
-        //        SlidingExpiration = TimeSpan.FromMinutes(5)
-        //    };
-        //}
+            try
+            {
+                var client = new HttpClient();
 
+                var jsonObject = new RestoreAlarm()
+                {
+                    deviceId = deviceId,
+                    userName = _httpContextAccessor.HttpContext.User.Identity.Name
+                };
 
-    }  
+                var json = JsonConvert.SerializeObject(jsonObject);
+
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(_configuration.GetValue<Uri>("SmartHutApi:RestoreAlarmUri"),
+                    content);
+                response.EnsureSuccessStatusCode();
+
+                return response;
+            }
+            catch (Exception e)
+            {
+                throw new HttpRequestException($"Something went wrong when trying to restore the alarm \n Message: {e.Message}");
+            }
+        }
+
+    }
 }
