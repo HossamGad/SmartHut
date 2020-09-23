@@ -24,7 +24,7 @@ The application is using **Microsoft.AspNetCore.SignalR.Client** in order to set
 
 ## How to run the published app (PREQ. the host must run a Linux based distribution)
 
-- In the root folder (linux-x64)
+- In the root folder (publish)
 - run: **./SmarthutPOC --urls https://localhost:5001**
 - _The server is being served with Kestrel, not the optimal solution, but it works for this purpose. Consider configure NGINX (reverse proxy) for serving the application._
 - _Note that no SSL is configured, but since this applikation is served from an internal network, this shouldnt pose any issues_
