@@ -53,7 +53,7 @@ namespace SmarthutPOC.Helpers
                     device.IsAlarm = true;
                     return device;
                 }
-                else if (device.Value + 5 > device.MaxValue)
+                else if (device.Value > device.MaxValue)
                 {
                     device.UnitTypeHighLow = device.Units.Unit switch
                     {
