@@ -6,39 +6,37 @@
     <div class="card mb-4 shadow-sm">
         <div class="card-body @(Device.IsAlarm ? "bg-warning" : "")">
             <p class="card-Title">
-                <h5>@Device.Name</h5>
-            </p>
-            <p class="card-text">
-                <small>Unit: @Device.Units.Name</small>
+                <h5 class="value-display"><i class="fas fa-map-marker-alt"></i>&nbsp;<strong>@Device.Name</strong></h5>
             </p>
             <div class="row">
-                <div class="col-5">
-                    <p id="@String.Concat(@Device.Id, "max")" class="card-text">Max: <strong>@Device.MaxValue @Device.Units.Unit</strong></p>
-                    <p id="@String.Concat(@Device.Id, "min")" class="card-text">Min: <strong>@Device.MinValue @Device.Units.Unit </strong></p>
+                <div class="col-8">
+                    <p id="@String.Concat(@Device.Id, "max")" class="card-text"><i class="fas fa-arrow-up"></i><strong>&nbsp;Max:  @Device.MaxValue @Device.Units.Unit</strong></p>
+                    <p id="@String.Concat(@Device.Id, "min")" class="card-text"><i class="fas fa-arrow-down"></i><strong>&nbsp;Min: @Device.MinValue @Device.Units.Unit </strong></p>
+                    <p><i class="fas fa-history"></i>&nbsp;<strong>@Device.Time</strong></p>
                     <div class="icon-container">
                         <i class="@SelectIcon(Device.UnitTypeHighLow)"></i>
                     </div>
                 </div>
-                <div class="col-7">
-                    <p> Current value:</p>
-                    <p>
-                        <strong>@Device.Value</strong>
-                    </p>
-                    <p>Last updated: </p>
-                    <p>
-                        <strong>@Device.Time</strong>
-                    </p>
+                <div class="col-4 my-auto text-center">
+                    @if (Device.Value == 0)
+                    {
+                        <div class="spinner-border" style="width: 2rem; height: 2rem; text-align: center;" role="status">
+                        </div> 
+                    }
+                    else
+                    {
+                        <p>Current value:</p>
+                        <h1>@Device.Value @Device.Units.Unit</h1>}
                 </div>
             </div>
             @if (Device.IsAlarm)
             {
                 <div class="row align-items-center">
-                    <button class="btn btn-lg btn-dark btn-block m-2" @onclick="ResetAlarm">
+                    <button class="btn btn-lg btn-dark btn-block m-2 restore-btn" @onclick="ResetAlarm">
                         Restore
                         @if (ShowSpinner)
                         {
                             <div class="spinner-border" style="width: 1rem; height: 1rem; text-align: center;" role="status">
-                                @* <span class="sr-only">Loading...</span> *@
                             </div>
                         }
                     </button>
