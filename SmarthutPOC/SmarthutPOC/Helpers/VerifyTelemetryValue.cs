@@ -8,12 +8,6 @@ namespace SmarthutPOC.Helpers
 {
     public class VerifyTelemetryValue
     {
-        private static IToastService _toastService;
-
-        public VerifyTelemetryValue(IToastService toastService)
-        {
-            _toastService = toastService;
-        }
 
         public static List<Device> SetDeviceWithTelemetry(List<Device> devices,
             List<Telemetry> telemetrys)

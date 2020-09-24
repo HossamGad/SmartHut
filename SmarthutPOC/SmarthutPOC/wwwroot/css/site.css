@@ -159,7 +159,17 @@ app {
   top: 0.5rem;
 }
 
-@media (max-width: 767.98px) {
+.telemetry-value{
+    font-size: 2rem;
+}
+
+@media (max-width: 1000px) {
+    .telemetry-value{
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 967.98px) {
   .main .top-row:not(.auth) {
     display: none;
   }
@@ -174,7 +184,7 @@ app {
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 968px) {
   app {
     flex-direction: row;
   }

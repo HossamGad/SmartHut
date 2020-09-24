@@ -21,7 +21,7 @@ else
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <button type="button" class="btn btn-secondary mb-2 text-white" @onclick="SetShowAlarm">@(_showAlarm ? "Show all devices" : "Show alarming devices")</button>
+                    <button type="button" class="btn @(_alarmCount > 0 ? "btn-warning text-black" : "btn-secondary text-white") mb-2" @onclick="SetShowAlarm">@(_showAlarm ? "Show all devices" : $"Show alarming devices ({_alarmCount})")</button>
                 </div>
             </div>
             <div class="row">
@@ -58,7 +58,7 @@ else
     private IEnumerable<Device> _devices = new List<Device>();
     private HubConnection _hubConnection;
     private bool _showAlarm;
-    public int _alarmCount;
+    private int _alarmCount;
 
     protected override async Task OnInitializedAsync()
     {
@@ -82,8 +82,6 @@ else
 
         }
 
-
-
         _hubConnection = new HubConnectionBuilder()
         .WithUrl(result.Url, opt => { opt.AccessTokenProvider = async () => await Task.FromResult(result.AccessToken); })
         .Build();
@@ -93,6 +91,9 @@ else
         {
             _devices = VerifyTelemetryValue.SetDeviceWithTelemetry((List<Device>) devices, (List<Telemetry>) telemetrys);
             if (_showAlarm) _devices = _devices.Where(d => d.IsAlarm);
+
+            _alarmCount = _devices.Where(d => d.IsAlarm).Count();
+
             StateHasChanged();
         });
 
@@ -109,12 +110,14 @@ else
                 restoredDevice.UnitTypeHighLow = UnitTypeHighLow.Ok;
                 ToastService.ShowInfo($"Alarm on device:\n{restoredDevice.Name}\nIs restored by:\n{userRestored}", "fas fa-info", guid,$"{restoredDevice.Name} is restored" );
             }
+
+            _alarmCount = _devices.Where(d => d.IsAlarm).Count();
+
             StateHasChanged();
         });
         await _hubConnection.StartAsync();
     }
 
-    //TODO use this for deciding when the signalR server is down
     public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
 
     public void Dispose()

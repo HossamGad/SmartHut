@@ -8,8 +8,8 @@ namespace SmarthutPOC.Helpers
     internal class CountdownTimer : IDisposable
     {
         private Timer _timer;
-        private int _timeout;
-        private int _countdownTotal;
+        private readonly int _timeout;
+        private readonly int _countdownTotal;
         private int _percentComplete;
 
         internal Action<int> OnTick;

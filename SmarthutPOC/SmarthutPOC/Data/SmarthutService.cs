@@ -15,17 +15,16 @@ namespace SmarthutPOC.Data
 {
     public class SmarthutService : ISmarthutService
     {
-        private readonly HttpClient _client; // skapar client
+        private readonly HttpClient _client; 
         private readonly IConfiguration _configuration;
-        private readonly IHttpContextAccessor _httpContextAccessor; // hämtar instans från minnet för att göra ett anrop
-        private readonly IMemoryCache _memoryCache; // sparar anropet i minnet 
+        private readonly IHttpContextAccessor _httpContextAccessor; 
+        
         private string _token { get; set; }
 
-        public SmarthutService(HttpClient client, IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IMemoryCache memoryCache)
+        public SmarthutService(HttpClient client, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
-            _memoryCache = memoryCache;
             _token = httpContextAccessor.HttpContext.GetTokenAsync("id_token").Result;
 
             client.BaseAddress = configuration.GetValue<Uri>("SmartHutApi:BaseUri");
@@ -53,7 +52,6 @@ namespace SmarthutPOC.Data
             Building buildingWithDevices = JsonConvert.DeserializeObject<Building>(response);
             var devices = buildingWithDevices.Devices;
 
-            //TODO #36 task no5
             foreach (var device in devices)
             {
                 foreach (var unit in await GetUnits())
