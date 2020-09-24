@@ -54,6 +54,7 @@ else
 
 @code
 {
+    public NegotiationResult result = new NegotiationResult();
     private IEnumerable<Device> _devices = new List<Device>();
     private HubConnection _hubConnection;
     private bool _showAlarm;
@@ -61,13 +62,29 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        try
+        {
+            _devices = await SmarthutService.GetDevices();
+        }
+        catch(Exception ex)
+        {
+            ToastService.ShowError(ex.Message, "Error", new Guid(), "Something went wrong during fetching devices");
+        }
         var devices = await SmarthutService.GetDevices();
         devices = devices.OrderBy(s => int.Parse(Regex.Match(s.Name, @"(\d+)(?!.*\d)").Value)).ToList();
-        var result = await SmarthutService.NegotiateSignalR();
+        try
+        {
+             result = await SmarthutService.NegotiateSignalR();
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError(ex.Message, "Error", new Guid(), "Something went wrong during negotiation with SignalR hub");
+
+        }
 
         _hubConnection = new HubConnectionBuilder()
-            .WithUrl(result.Url, opt => { opt.AccessTokenProvider = async () => await Task.FromResult(result.AccessToken); })
-            .Build();
+        .WithUrl(result.Url, opt => { opt.AccessTokenProvider = async () => await Task.FromResult(result.AccessToken); })
+        .Build();
 
 
         _hubConnection.On<IEnumerable<Telemetry>>("newTelemetry", telemetrys =>
