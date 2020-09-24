@@ -101,7 +101,6 @@ else
         await _hubConnection.StartAsync();
     }
 
-    //TODO use this for deciding when the signalR server is down
     public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
 
     public void Dispose()
